@@ -31,33 +31,25 @@ jobs:
       - name: Compute SHA256 hashes
         id: hashes
         run: |
-          WIN_HASH=$(sha256sum dist/bin/freakjs-windows-x64.exe | awk '{print $1}')
-          LIN64_HASH=$(sha256sum dist/bin/freakjs-linux-x64 | awk '{print $1}')
-          LINARM_HASH=$(sha256sum dist/bin/freakjs-linux-arm64 | awk '{print $1}')
-          MAC64_HASH=$(sha256sum dist/bin/freakjs-darwin-x64 | awk '{print $1}')
-          MACARM_HASH=$(sha256sum dist/bin/freakjs-darwin-arm64 | awk '{print $1}')
-          echo "win_hash=$WIN_HASH" >> $GITHUB_OUTPUT
-          echo "lin64_hash=$LIN64_HASH" >> $GITHUB_OUTPUT
-          echo "linarm_hash=$LINARM_HASH" >> $GITHUB_OUTPUT
-          echo "mac64_hash=$MAC64_HASH" >> $GITHUB_OUTPUT
-          echo "macarm_hash=$MACARM_HASH" >> $GITHUB_OUTPUT
+          echo "win_hash=$(sha256sum dist/bin/freakjs-windows-x64.exe | awk '{print $1}')"   >> $GITHUB_OUTPUT
+          echo "lin64_hash=$(sha256sum dist/bin/freakjs-linux-x64 | awk '{print $1}')"        >> $GITHUB_OUTPUT
+          echo "linarm_hash=$(sha256sum dist/bin/freakjs-linux-arm64 | awk '{print $1}')"     >> $GITHUB_OUTPUT
+          echo "mac64_hash=$(sha256sum dist/bin/freakjs-darwin-x64 | awk '{print $1}')"       >> $GITHUB_OUTPUT
+          echo "macarm_hash=$(sha256sum dist/bin/freakjs-darwin-arm64 | awk '{print $1}')"    >> $GITHUB_OUTPUT
 
-      - name: Update Scoop manifest with version and hash
+      - name: Update Scoop and Winget manifests
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           WIN_HASH="${{ steps.hashes.outputs.win_hash }}"
+
           sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" bucket/freakjs.json
-          sed -i "s/FREAKJS_WIN_HASH/$WIN_HASH/" bucket/freakjs.json
-          sed -i "s|/download/v[^/]*/freakjs-windows|/download/v$VERSION/freakjs-windows|" bucket/freakjs.json
+          sed -i "s/\"hash\": \".*\"/\"hash\": \"$WIN_HASH\"/" bucket/freakjs.json
+          sed -i "s|/download/v[^/]*/freakjs-windows|/download/v$VERSION/freakjs-windows|g" bucket/freakjs.json
 
-      - name: Update Winget manifest with version and hash
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          WIN_HASH="${{ steps.hashes.outputs.win_hash }}"
           sed -i "s/PackageVersion: .*/PackageVersion: $VERSION/" manifests/FreakJS.FreakJS.yaml
           sed -i "s/PackageVersion: .*/PackageVersion: $VERSION/" manifests/FreakJS.FreakJS.installer.yaml
           sed -i "s/PackageVersion: .*/PackageVersion: $VERSION/" manifests/FreakJS.FreakJS.locale.en-US.yaml
-          sed -i "s|/releases/download/v[^/]*/|/releases/download/v$VERSION/|" manifests/FreakJS.FreakJS.installer.yaml
+          sed -i "s|/releases/download/v[^/]*/|/releases/download/v$VERSION/|g" manifests/FreakJS.FreakJS.installer.yaml
           sed -i "s/InstallerSha256: .*/InstallerSha256: $WIN_HASH/" manifests/FreakJS.FreakJS.installer.yaml
 
       - name: Commit updated manifests
@@ -65,21 +57,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add bucket/freakjs.json manifests/
-          git commit -m "chore: update manifests to ${GITHUB_REF_NAME}" || echo "No changes to commit"
+          git commit -m "chore: update manifests to ${GITHUB_REF_NAME}" || echo "No changes"
           git push origin HEAD:main
 
-      - name: Create GitHub Release with binaries
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/bin/*
           generate_release_notes: true
           body: |
-            ## Install
+            ## Instalação
 
-            **Windows (Scoop):**
+            **Windows:**
             ```powershell
-            scoop bucket add freakjs https://github.com/lucas-s-santos/FreakJS
-            scoop install freakjs/freakjs
+            winget install FreakJS.FreakJS
             ```
 
             **Mac / Linux:**
@@ -87,11 +78,75 @@ jobs:
             curl -fsSL https://raw.githubusercontent.com/lucas-s-santos/FreakJS/main/install.sh | bash
             ```
 
-            ## SHA256 Hashes
-            | File | SHA256 |
-            |------|--------|
+            ## SHA256
+            | Arquivo | Hash |
+            |---------|------|
             | freakjs-windows-x64.exe | `${{ steps.hashes.outputs.win_hash }}` |
             | freakjs-linux-x64 | `${{ steps.hashes.outputs.lin64_hash }}` |
             | freakjs-linux-arm64 | `${{ steps.hashes.outputs.linarm_hash }}` |
             | freakjs-darwin-x64 | `${{ steps.hashes.outputs.mac64_hash }}` |
             | freakjs-darwin-arm64 | `${{ steps.hashes.outputs.macarm_hash }}` |
+
+      - name: Submit PR to Winget (microsoft/winget-pkgs)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          WIN_HASH="${{ steps.hashes.outputs.win_hash }}"
+          FORK_OWNER="joaogabriel343"
+          BRANCH="freakjs-$VERSION"
+
+          # Garante que o fork existe
+          gh repo fork microsoft/winget-pkgs --clone=false 2>/dev/null || true
+
+          # Pega o SHA atual do master do fork
+          SHA=$(gh api repos/$FORK_OWNER/winget-pkgs/git/refs/heads/master --jq '.object.sha')
+
+          # Cria o branch da nova versão
+          gh api repos/$FORK_OWNER/winget-pkgs/git/refs \
+            -X POST \
+            -f ref="refs/heads/$BRANCH" \
+            -f sha="$SHA" 2>/dev/null || true
+
+          BASE_PATH="manifests/f/FreakJS/FreakJS/$VERSION"
+
+          # Arquivo 1 — version manifest
+          FILE1=$(printf 'PackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nDefaultLocale: en-US\nManifestType: version\nManifestVersion: 1.6.0\n' "$VERSION" | base64 -w 0)
+          gh api repos/$FORK_OWNER/winget-pkgs/contents/$BASE_PATH/FreakJS.FreakJS.yaml \
+            -X PUT \
+            -f message="Add FreakJS version $VERSION" \
+            -f content="$FILE1" \
+            -f branch="$BRANCH" > /dev/null
+
+          # Arquivo 2 — installer manifest
+          FILE2=$(printf 'PackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nPlatform:\n  - Windows.Desktop\nMinimumOSVersion: 10.0.0.0\nArchitecture: x64\nInstallerType: portable\nInstallerUrl: https://github.com/lucas-s-santos/FreakJS/releases/download/v%s/freakjs-windows-x64.exe\nInstallerSha256: %s\nCommands:\n  - freakjs\nPortableCommandAlias: freakjs\nManifestType: installer\nManifestVersion: 1.6.0\n' "$VERSION" "$VERSION" "$WIN_HASH" | base64 -w 0)
+          gh api repos/$FORK_OWNER/winget-pkgs/contents/$BASE_PATH/FreakJS.FreakJS.installer.yaml \
+            -X PUT \
+            -f message="Add FreakJS version $VERSION" \
+            -f content="$FILE2" \
+            -f branch="$BRANCH" > /dev/null
+
+          # Arquivo 3 — locale manifest
+          FILE3=$(printf 'PackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nPackageLocale: en-US\nPublisher: FreakJS\nPackageName: FreakJS\nLicense: MIT\nShortDescription: Bun-native frontend framework — zero deps, edge-ready, free to deploy\nDescription: |-\n  FreakJS is a minimal, security-first frontend framework built on Bun and W3C Web APIs.\n  Zero runtime npm dependencies. File-based routing. SSR + Edge Functions.\n  Deploys for free on Vercel, Netlify and Cloudflare Pages.\nTags:\n  - bun\n  - frontend\n  - framework\n  - javascript\n  - typescript\n  - edge\n  - vercel\nManifestType: defaultLocale\nManifestVersion: 1.6.0\n' "$VERSION" | base64 -w 0)
+          gh api repos/$FORK_OWNER/winget-pkgs/contents/$BASE_PATH/FreakJS.FreakJS.locale.en-US.yaml \
+            -X PUT \
+            -f message="Add FreakJS version $VERSION" \
+            -f content="$FILE3" \
+            -f branch="$BRANCH" > /dev/null
+
+          # Abre o PR na Microsoft
+          gh pr create \
+            --repo microsoft/winget-pkgs \
+            --head "$FORK_OWNER:$BRANCH" \
+            --base master \
+            --title "Add FreakJS version $VERSION" \
+            --body "## FreakJS v$VERSION
+
+          Bun-native frontend framework — zero runtime dependencies, edge-ready, free to deploy.
+
+          - **License:** MIT
+          - **Homepage:** https://github.com/lucas-s-santos/FreakJS
+          - **InstallerType:** portable
+          - **SHA256:** \`$WIN_HASH\`"
+
+          echo "PR aberto em microsoft/winget-pkgs para v$VERSION"
