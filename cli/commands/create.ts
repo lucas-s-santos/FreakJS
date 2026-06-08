@@ -306,7 +306,7 @@ export default function Home({}: PageProps) {
     "utf-8",
   );
 
-  // netlify.toml — páginas estáticas na Netlify
+  // netlify.toml — Netlify (static pages)
   writeFileSync(
     join(targetDir, "netlify.toml"),
     `[build]
@@ -315,6 +315,92 @@ export default function Home({}: PageProps) {
 
 [build.environment]
   BUN_VERSION = "1.2.0"
+`,
+    "utf-8",
+  );
+
+  // railway.json — Railway (full-stack: static + API routes)
+  writeFileSync(
+    join(targetDir, "railway.json"),
+    JSON.stringify({
+      $schema: "https://railway.app/railway.schema.json",
+      build: { builder: "NIXPACKS", buildCommand: "bun install" },
+      deploy: { startCommand: "bun run dev", healthcheckPath: "/" },
+    }, null, 2) + "\n",
+    "utf-8",
+  );
+
+  // render.yaml — Render (static pages)
+  writeFileSync(
+    join(targetDir, "render.yaml"),
+    `services:
+  - type: web
+    name: ${projectName}
+    runtime: node
+    buildCommand: bun install && bun run build
+    staticPublishPath: .vercel/output/static
+    envVars:
+      - key: BUN_VERSION
+        value: "1.2.0"
+`,
+    "utf-8",
+  );
+
+  // amplify.yml — AWS Amplify (static pages)
+  writeFileSync(
+    join(targetDir, "amplify.yml"),
+    `version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - curl -fsSL https://bun.sh/install | bash
+        - export PATH="$HOME/.bun/bin:$PATH"
+        - bun install
+    build:
+      commands:
+        - bun run build
+  artifacts:
+    baseDirectory: .vercel/output/static
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - node_modules/**/*
+`,
+    "utf-8",
+  );
+
+  // GitHub Pages workflow — deploy automático em push para main
+  mkdirSync(join(targetDir, ".github", "workflows"), { recursive: true });
+  writeFileSync(
+    join(targetDir, ".github", "workflows", "deploy-pages.yml"),
+    `name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: \${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .vercel/output/static
+      - uses: actions/deploy-pages@v4
+        id: deployment
 `,
     "utf-8",
   );
