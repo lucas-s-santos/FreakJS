@@ -19,8 +19,9 @@ export async function create(args: string[]): Promise<void> {
   }
 
   const targetDir = resolve(process.cwd(), projectName);
-  const freakjsDep = existsSync(resolve(process.cwd(), "src/jsx/factory.ts"))
-    ? `file:${relative(targetDir, process.cwd()).replace(/\\/g, "/")}`
+  const frameworkRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+  const freakjsDep = existsSync(resolve(frameworkRoot, "src/jsx/factory.ts"))
+    ? `file:${relative(targetDir, frameworkRoot).replace(/\\/g, "/")}`
     : "^0.1.0";
 
   if (existsSync(targetDir)) {
@@ -35,7 +36,6 @@ export async function create(args: string[]): Promise<void> {
   mkdirSync(join(targetDir, "public"), { recursive: true });
 
   // Copia o icon.png do framework para public/ do projeto
-  const frameworkRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
   const iconSrc = join(frameworkRoot, "icon.png");
   if (existsSync(iconSrc)) {
     copyFileSync(iconSrc, join(targetDir, "public", "icon.png"));
