@@ -134,8 +134,8 @@ jobs:
             -f content="$FILE3" \
             -f branch="$BRANCH" > /dev/null
 
-          # Abre o PR na Microsoft
-          gh pr create \
+          # Abre o PR na Microsoft e captura a URL
+          PR_URL=$(gh pr create \
             --repo microsoft/winget-pkgs \
             --head "$FORK_OWNER:$BRANCH" \
             --base master \
@@ -147,6 +147,17 @@ jobs:
           - **License:** MIT
           - **Homepage:** https://github.com/lucas-s-santos/FreakJS
           - **InstallerType:** portable
-          - **SHA256:** \`$WIN_HASH\`"
+          - **SHA256:** \`$WIN_HASH\`")
 
-          echo "PR aberto em microsoft/winget-pkgs para v$VERSION"
+          echo "PR aberto: $PR_URL"
+
+          # Extrai o número do PR da URL
+          PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
+
+          # Aguarda o bot processar (30s) e assina o CLA automaticamente
+          sleep 30
+          gh pr comment "$PR_NUMBER" \
+            --repo microsoft/winget-pkgs \
+            --body "@microsoft-github-policy-service agree"
+
+          echo "CLA assinado automaticamente no PR #$PR_NUMBER"
