@@ -6,7 +6,7 @@
   "architecture": {
     "64bit": {
       "url": "https://github.com/lucas-s-santos/FreakJS/releases/download/v0.1.0/freakjs-windows-x64.exe",
-      "hash": "FREAKJS_WIN_HASH",
+      "hash": "3ca9e0aa0aca82b6aec1bf2433084a23b2465691b100b11c3f4e51683f37a565",
       "bin": [["freakjs-windows-x64.exe", "freakjs"]]
     }
   },
@@ -14,7 +14,7 @@
   "autoupdate": {
     "architecture": {
       "64bit": {
-        "url": "https://github.com/lucas-s-santos/FreakJS/releases/download/v$version/freakjs-windows-x64.exe"
+        "url": "https://github.com/lucas-s-santos/FreakJS/releases/download/v0.1.0/freakjs-windows-x64.exe"
       }
     }
   }
