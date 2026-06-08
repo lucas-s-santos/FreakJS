@@ -31,11 +31,11 @@ jobs:
       - name: Compute SHA256 hashes
         id: hashes
         run: |
-          echo "win_hash=$(sha256sum dist/bin/freakjs-windows-x64.exe | awk '{print $1}')"   >> $GITHUB_OUTPUT
-          echo "lin64_hash=$(sha256sum dist/bin/freakjs-linux-x64 | awk '{print $1}')"        >> $GITHUB_OUTPUT
-          echo "linarm_hash=$(sha256sum dist/bin/freakjs-linux-arm64 | awk '{print $1}')"     >> $GITHUB_OUTPUT
-          echo "mac64_hash=$(sha256sum dist/bin/freakjs-darwin-x64 | awk '{print $1}')"       >> $GITHUB_OUTPUT
-          echo "macarm_hash=$(sha256sum dist/bin/freakjs-darwin-arm64 | awk '{print $1}')"    >> $GITHUB_OUTPUT
+          echo "win_hash=$(sha256sum dist/bin/freakjs-windows-x64.exe | awk '{print toupper($1)}')"   >> $GITHUB_OUTPUT
+          echo "lin64_hash=$(sha256sum dist/bin/freakjs-linux-x64 | awk '{print toupper($1)}')"        >> $GITHUB_OUTPUT
+          echo "linarm_hash=$(sha256sum dist/bin/freakjs-linux-arm64 | awk '{print toupper($1)}')"     >> $GITHUB_OUTPUT
+          echo "mac64_hash=$(sha256sum dist/bin/freakjs-darwin-x64 | awk '{print toupper($1)}')"       >> $GITHUB_OUTPUT
+          echo "macarm_hash=$(sha256sum dist/bin/freakjs-darwin-arm64 | awk '{print toupper($1)}')"    >> $GITHUB_OUTPUT
 
       - name: Update Scoop and Winget manifests
         run: |
