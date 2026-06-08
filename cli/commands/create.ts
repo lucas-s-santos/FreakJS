@@ -51,7 +51,7 @@ export async function create(args: string[]): Promise<void> {
         build: "freakjs build",
       },
       devDependencies: {
-        freakjs: isLocalDev ? "link:freakjs" : "^0.1.0",
+        freakjs: isLocalDev ? "link:freakjs" : "github:lucas-s-santos/FreakJS",
         "@types/bun": "latest",
       },
     }, null, 2) + "\n",
@@ -292,6 +292,17 @@ export default function Home({}: PageProps) {
   return Response.json({ message: "Hello from FreakJS!", url: req.url });
 }
 `,
+    "utf-8",
+  );
+
+  // vercel.json — configura build command para deploy automático
+  writeFileSync(
+    join(targetDir, "vercel.json"),
+    JSON.stringify({
+      buildCommand: "bun run build",
+      installCommand: "bun install",
+      framework: null,
+    }, null, 2) + "\n",
     "utf-8",
   );
 
