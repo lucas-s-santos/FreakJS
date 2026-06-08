@@ -2,46 +2,57 @@
 
 **Bun-native frontend framework. Zero runtime dependencies. Edge-ready. Free to deploy.**
 
-FreakJS is a minimal, security-first frontend framework built entirely on [Bun](https://bun.sh) and W3C Web APIs. No npm supply-chain risk. No bloated config files. Deploys for free on Vercel, Netlify, and Cloudflare Pages — no backend required.
+FreakJS é um framework frontend minimalista e seguro, construído sobre [Bun](https://bun.sh) e W3C Web APIs. Sem risco de supply-chain do npm. Sem arquivos de configuração complexos. Deploy gratuito na Vercel, Netlify e Cloudflare Pages — sem backend.
 
 ---
 
-## Why FreakJS?
+## Por que FreakJS?
 
-### The token-efficiency benchmark
+### O benchmark de tokens
 
-A recent real-world test measured how many Claude Sonnet tokens a model consumed to scaffold a complete frontend from a single prompt using each framework:
+Um teste real mediu quantos tokens do Claude Sonnet um modelo consome para montar um frontend completo a partir de um único prompt:
 
-| Framework | Tokens consumed | Server required |
-|-----------|----------------|-----------------|
-| NestJS    | ~1,100,000     | Yes             |
-| Next.js / Vite | ~900,000  | No              |
-| Rails     | ~300,000       | **Yes**         |
-| **FreakJS** | **< Rails** | **No**          |
+| Framework | Tokens consumidos | Precisa de servidor |
+|-----------|------------------|---------------------|
+| NestJS    | ~1.100.000       | Sim                 |
+| Next.js / Vite | ~900.000   | Não                 |
+| Rails     | ~300.000         | **Sim**             |
+| **FreakJS** | **< Rails**  | **Não**             |
 
-Rails won on token count because its conventions are tight and its surface area is predictable. FreakJS borrows that same convention-over-configuration philosophy — but runs entirely on the edge, with no server, no backend cost, and zero runtime npm dependencies.
+Rails ganhou em tokens por ter convenções rígidas e superfície de API previsível. O FreakJS usa a mesma filosofia — mas roda inteiramente no edge, sem servidor, sem custo de backend e com zero dependências npm em runtime.
 
-### The npm security problem
+### O problema de segurança do npm
 
-Every `npm install` pulls a dependency graph that runs arbitrary `postinstall` scripts under your credentials. Supply-chain attacks (SolarWinds, event-stream, ua-parser-js, etc.) exploit exactly this surface. FreakJS's runtime has **zero npm runtime dependencies** — the only packages in `devDependencies` are Bun's own type definitions and TypeScript, which never ship to production.
+Todo `npm install` puxa um grafo de dependências que executa scripts `postinstall` arbitrários com suas credenciais. Ataques de supply-chain exploram exatamente isso. O FreakJS tem **zero dependências npm em runtime** — os únicos pacotes em `devDependencies` são as definições de tipos do Bun e o TypeScript, que nunca chegam à produção.
 
-### The hosting story
+### Hospedagem gratuita
 
-Build output is native [Vercel Build Output API v3](https://vercel.com/docs/build-output-api/v3). Static pages go to the CDN edge. Dynamic pages and API routes become isolated Edge Functions. You pay nothing at hobby scale on Vercel or Netlify.
-
----
-
-## Requirements
-
-- [Bun](https://bun.sh) >= 1.1.0
-
-That's it. No Node. No npm. No extra tooling.
+O output do build segue nativamente a [Vercel Build Output API v3](https://vercel.com/docs/build-output-api/v3). Páginas estáticas vão para o CDN. Páginas dinâmicas e rotas de API viram Edge Functions isoladas. Custo zero na escala hobby da Vercel e Netlify.
 
 ---
 
-## Installation
+## Pré-requisito
 
-FreakJS is installed as a **native binary** on your machine — like Bun or Deno. Run once, use forever from any terminal.
+- [Bun](https://bun.sh) >= 1.1.0 instalado na máquina
+
+---
+
+## Instalação
+
+FreakJS é instalado como um **binário nativo** na sua máquina — igual ao Bun e ao Deno. Instale uma vez, use para sempre em qualquer terminal.
+
+### Windows — Scoop
+
+```powershell
+# 1. Instalar Scoop (se ainda não tiver)
+irm get.scoop.sh | iex
+
+# 2. Adicionar o bucket do FreakJS
+scoop bucket add freakjs https://github.com/lucas-s-santos/FreakJS
+
+# 3. Instalar
+scoop install freakjs/freakjs
+```
 
 ### Mac / Linux
 
@@ -49,73 +60,66 @@ FreakJS is installed as a **native binary** on your machine — like Bun or Deno
 curl -fsSL https://raw.githubusercontent.com/lucas-s-santos/FreakJS/main/install.sh | bash
 ```
 
-Open a new terminal window and it's ready.
+Abra um novo terminal e o comando `freakjs` estará disponível.
 
-### Windows (PowerShell)
-
-```powershell
-irm https://raw.githubusercontent.com/lucas-s-santos/FreakJS/main/install.ps1 | iex
-```
-
-Open a new terminal window and it's ready.
-
-> The binary is installed in `~/.freakjs/bin/` and added to your PATH automatically. No admin rights required on Windows.
+> **Winget (Windows):** A submissão ao repositório oficial da Microsoft está em andamento. Em breve: `winget install FreakJS.FreakJS`
 
 ---
 
-## Quick start
+## Criar o primeiro projeto
 
-After installing, from any folder on your machine:
+Depois de instalado, em qualquer pasta do seu computador:
 
 ```bash
 freakjs create meu-projeto
 cd meu-projeto
-bun run dev        # → http://localhost:3000
-bun run build      # → .vercel/output/ (Vercel Build Output API v3)
+bun run dev
+```
+
+Acesse `http://localhost:3000` — está rodando.
+
+```bash
+bun run build   # gera .vercel/output/ pronto para deploy
 ```
 
 ---
 
-## Project structure
+## Estrutura de um projeto FreakJS
 
 ```
-my-app/
+meu-projeto/
 ├── src/
-│   ├── pages/             # File-based routes
-│   │   ├── index.tsx      # → /
-│   │   ├── about.tsx      # → /about
+│   ├── pages/
+│   │   ├── index.tsx          # → /
+│   │   ├── sobre.tsx          # → /sobre
 │   │   ├── blog/
-│   │   │   └── [slug].tsx # → /blog/:slug  (dynamic)
+│   │   │   └── [slug].tsx     # → /blog/:slug  (dinâmica)
 │   │   └── api/
-│   │       └── hello.ts   # → /api/hello   (Edge Function)
-│   └── components/        # Shared components
-├── public/                # Static assets (copied verbatim)
-├── .vercel/output/        # Generated by `freakjs build`
-├── .freak/                # Temporary build cache (git-ignored)
+│   │       └── hello.ts       # → /api/hello   (Edge Function)
+│   └── components/
+├── public/                    # Assets estáticos
 ├── package.json
 └── tsconfig.json
 ```
 
 ---
 
-## Pages
-
-Every file inside `src/pages/` that exports a default function becomes a route.
+## Páginas
 
 ```tsx
 // src/pages/index.tsx
 import type { PageProps } from "freakjs";
 
 export const metadata = {
-  title: "My App",
-  description: "Built with FreakJS",
+  title: "Meu App",
+  description: "Feito com FreakJS",
 };
 
 export default function Home({ url, params, searchParams }: PageProps) {
   return (
     <main>
-      <h1>Hello, FreakJS</h1>
-      <p>Current path: {url.pathname}</p>
+      <h1>Olá, FreakJS</h1>
+      <p>Caminho atual: {url.pathname}</p>
     </main>
   );
 }
@@ -125,104 +129,70 @@ export default function Home({ url, params, searchParams }: PageProps) {
 
 ```ts
 interface PageProps {
-  params: Record<string, string>;   // dynamic segments from the URL
-  searchParams: URLSearchParams;    // ?key=value pairs
-  url: URL;                         // full URL object
+  params: Record<string, string>;  // segmentos dinâmicos da URL
+  searchParams: URLSearchParams;   // ?chave=valor
+  url: URL;                        // URL completo
 }
 ```
 
-### Metadata
+---
 
-```ts
-export const metadata = {
-  title: "Page title",         // <title>
-  description: "SEO blurb",   // <meta name="description">
-};
-```
+## Roteamento
+
+| Arquivo                            | Rota             | Tipo      |
+|------------------------------------|------------------|-----------|
+| `src/pages/index.tsx`              | `/`              | página    |
+| `src/pages/sobre.tsx`              | `/sobre`         | página    |
+| `src/pages/blog/[slug].tsx`        | `/blog/:slug`    | dinâmica  |
+| `src/pages/docs/[...path].tsx`     | `/docs/:path*`   | catch-all |
+| `src/pages/api/hello.ts`           | `/api/hello`     | API       |
+
+Prioridade: estática > dinâmica > catch-all.
 
 ---
 
-## Routing
-
-Routes are derived automatically from the file tree — no config needed.
-
-| File path                         | Route pattern        | Kind    |
-|-----------------------------------|----------------------|---------|
-| `src/pages/index.tsx`             | `/`                  | page    |
-| `src/pages/about.tsx`             | `/about`             | page    |
-| `src/pages/blog/index.tsx`        | `/blog`              | page    |
-| `src/pages/blog/[slug].tsx`       | `/blog/:slug`        | dynamic |
-| `src/pages/docs/[...path].tsx`    | `/docs/:path*`       | catch-all |
-| `src/pages/api/hello.ts`          | `/api/hello`         | API     |
-| `src/pages/api/users/[id].ts`     | `/api/users/:id`     | API     |
-
-Route priority: static > dynamic > catch-all.
-
----
-
-## API routes
-
-Files under `src/pages/api/` export named HTTP-method handlers. They run as Edge Functions in production.
+## API Routes
 
 ```ts
 // src/pages/api/hello.ts
-export async function GET(req: Request, params: Record<string, string>): Promise<Response> {
-  return Response.json({ message: "Hello!", url: req.url });
+export async function GET(req: Request): Promise<Response> {
+  return Response.json({ message: "Olá do FreakJS!" });
 }
 
 export async function POST(req: Request): Promise<Response> {
   const body = await req.json();
-  return Response.json({ received: body }, { status: 201 });
+  return Response.json({ recebido: body }, { status: 201 });
 }
 ```
 
-Unhandled methods automatically return `405 Method Not Allowed` with a correct `Allow` header.
+Métodos não implementados retornam `405 Method Not Allowed` automaticamente.
 
 ---
 
-## Components
-
-Components are plain functions — no special imports needed beyond JSX.
+## Componentes
 
 ```tsx
 // src/components/Card.tsx
 import type { VNode } from "freakjs";
 
 interface CardProps {
-  title: string;
+  titulo: string;
   children?: VNode[];
 }
 
-export function Card({ title, children }: CardProps) {
+export function Card({ titulo, children }: CardProps) {
   return (
     <div className="card">
-      <h2>{title}</h2>
+      <h2>{titulo}</h2>
       {children}
     </div>
   );
 }
 ```
 
-```tsx
-// src/pages/index.tsx
-import { Card } from "../components/Card.tsx";
-
-export default function Home() {
-  return (
-    <main>
-      <Card title="FreakJS">
-        <p>Zero deps, full speed.</p>
-      </Card>
-    </main>
-  );
-}
-```
-
 ---
 
-## Using Supabase (no backend needed)
-
-FreakJS is designed to work with backend-as-a-service platforms like Supabase. All data fetching happens in API routes or client-side — no dedicated server required.
+## Usando Supabase (sem backend)
 
 ```ts
 // src/pages/api/posts.ts
@@ -240,217 +210,109 @@ export async function GET(): Promise<Response> {
 }
 ```
 
-Set environment variables in your Vercel/Netlify dashboard — they are injected into Edge Functions at build time.
+Configure as variáveis de ambiente no painel da Vercel ou Netlify.
 
 ---
 
-## Build and deploy
+## Deploy
 
-### Vercel (recommended)
+### Vercel
 
 ```bash
 bun run build
-# Outputs .vercel/output/ — Vercel Build Output API v3
-
 vercel deploy --prebuilt
 ```
 
-Or connect your GitHub repo in the Vercel dashboard and set the build command to `bun run build`. Vercel auto-detects the `.vercel/output/` directory.
-
-**Static pages** are served from the global CDN at zero cost.  
-**Dynamic pages and API routes** become isolated Edge Functions — no cold starts, global PoPs.
+Ou conecte seu repositório GitHub na Vercel e defina o build command como `bun run build`. A Vercel detecta `.vercel/output/` automaticamente.
 
 ### Netlify
 
-Netlify supports the Vercel Build Output API v3 format directly. Point the publish directory to `.vercel/output/static` and configure edge functions from `.vercel/output/functions`.
-
-### Manual / Cloudflare Pages
-
-The `static/` directory inside `.vercel/output/` can be served from any CDN. Edge functions are standard ES modules with a `fetch` handler — compatible with Cloudflare Workers with minor adapter work (planned for a future release).
+Aponte o diretório de publicação para `.vercel/output/static`.
 
 ---
 
-## Build output structure
+## Output do build
 
 ```
 .vercel/output/
-├── config.json                # Route rules (Vercel Build Output API v3)
+├── config.json                    # Regras de rota (Build Output API v3)
 ├── static/
-│   ├── index.html             # Pre-rendered static pages
-│   ├── about.html
-│   └── _freakjs/              # Framework assets
+│   ├── index.html                 # Páginas pré-renderizadas
+│   └── sobre.html
 └── functions/
     ├── blog/[slug].func/
-    │   ├── index.js           # Bundled edge function
-    │   └── .vc-config.json    # { "runtime": "edge" }
+    │   ├── index.js               # Edge Function empacotada
+    │   └── .vc-config.json
     └── api/hello.func/
         ├── index.js
         └── .vc-config.json
 ```
 
-Static pages are pre-rendered at build time (zero compute at request time). Dynamic routes and API routes are Edge Functions (compute on demand, globally distributed).
-
 ---
 
-## Development server
+## Servidor de desenvolvimento
 
 ```bash
-bun run dev
-# → http://localhost:3000
+bun run dev   # → http://localhost:3000
 ```
 
-Features:
-- **Hot Module Replacement** — file changes reload the browser instantly via WebSocket, no full page reload delay
-- **SSR in development** — every page is server-rendered, identical to production
-- **API routes work locally** — no mocking or separate process needed
-- **Error overlay** — SSR errors are surfaced inline in the browser during dev
+- **HMR** — mudanças nos arquivos recarregam o browser via WebSocket
+- **SSR em dev** — idêntico à produção
+- **API routes funcionam localmente** — sem mock, sem processo separado
 
 ---
 
-## JSX
+## Segurança
 
-FreakJS ships its own JSX factory — no React dependency. Configure it in `tsconfig.json` (already done by `freakjs create`):
-
-```json
-{
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "freakjs"
-  }
-}
-```
-
-The runtime has full support for:
-- Function components
-- Fragments (`<>...</>`)
-- Void elements (`<br>`, `<img>`, `<input>`, etc.)
-- HTML attribute mapping (`className` → `class`, `htmlFor` → `for`)
-- Event handlers (attached during client hydration, stripped from SSR output)
-- Proper HTML escaping on all text content
+| Vetor de ataque | Como o FreakJS lida |
+|-----------------|---------------------|
+| Supply-chain npm | Zero dependências runtime — nada para envenenar |
+| Scripts `postinstall` | Sem dependências runtime com lifecycle scripts |
+| XSS | Todo texto HTML-escapado por padrão no `renderToString` |
+| Injeção via event handlers | Atributos `on*` removidos do SSR; reattached só no cliente |
+| Isolamento edge | Cada função roda em isolate V8 próprio (Vercel/Cloudflare) |
 
 ---
 
-## Hydration model
-
-FreakJS uses **event-only hydration**: the server renders full HTML, the client walks the existing DOM and attaches event listeners — no re-rendering, no virtual DOM diffing, no JavaScript needed to display content. Pages are fully readable with JS disabled.
-
-This is intentionally minimal for the MVP. A reactive state system is planned for a future release.
-
----
-
-## Security model
-
-| Threat vector | How FreakJS handles it |
-|---------------|------------------------|
-| Supply-chain attacks | Zero runtime npm deps — nothing to poison |
-| `postinstall` scripts | No runtime dependencies that have lifecycle scripts |
-| XSS | All text content HTML-escaped by default in `renderToString` |
-| Event handler injection | `on*` attributes are stripped from SSR output; only re-attached client-side |
-| Edge isolation | Each function runs in its own V8 isolate (Vercel/Cloudflare) |
-| `dangerouslySetInnerHTML` | Accepted but not promoted — named to be explicit |
-
----
-
-## CLI reference
+## CLI
 
 ```
-freakjs <command> [options]
+freakjs <comando>
 
-Commands:
-  create <name>   Scaffold a new FreakJS project
-  dev             Start the development server  (default port: 3000)
-  build           Build for production (Vercel Build Output API v3)
-
-Options:
-  -h, --help      Show help
+Comandos:
+  create <nome>   Cria um novo projeto FreakJS
+  dev             Inicia o servidor de desenvolvimento (porta 3000)
+  build           Build de produção (Vercel Build Output API v3)
 ```
 
 ---
 
-## API reference
+## API pública
 
-### Exported from `"freakjs"`
+### `"freakjs"`
 
-| Export | Description |
-|--------|-------------|
-| `h(type, props, ...children)` | JSX createElement (used internally by the JSX transform) |
-| `Fragment` | Fragment symbol for `<>...</>` |
-| `jsx / jsxs / jsxDEV` | jsx-runtime entry points (used by the TypeScript compiler) |
-| `renderToString(vnode)` | Render a VNode tree to an HTML string |
-| `hydrate(vnode, container)` | Attach event listeners to a server-rendered DOM subtree |
-| `PageProps` | Type for page component props |
-| `PageMetadata` | Type for the `metadata` export |
-| `PageModule` | Type for a full page module |
-| `ApiModule` | Type for an API route module |
-| `VNode / VNodeChild / FunctionComponent` | Core JSX types |
-
-### Exported from `"freakjs/server"`
-
-| Export | Description |
-|--------|-------------|
-| `renderToString(vnode)` | Same as above — explicit server import for edge functions |
-
-### Exported from `"freakjs/client"`
-
-| Export | Description |
-|--------|-------------|
-| `hydrate(vnode, container)` | Client-side event attachment |
-
----
-
-## Architecture overview
-
-```
-freakjs/
-├── cli/
-│   ├── index.ts            # Entry point — routes commands
-│   └── commands/
-│       ├── create.ts       # Project scaffolder
-│       ├── dev.ts          # Development server launcher
-│       └── build.ts        # Production build launcher
-├── runtime/
-│   └── index.ts            # Public API surface for user projects
-└── src/
-    ├── jsx/
-    │   ├── vnode.ts        # VNode type definitions
-    │   ├── factory.ts      # h(), jsx(), Fragment — the JSX factory
-    │   ├── server.ts       # renderToString() — SSR renderer
-    │   └── client.ts       # hydrate() — event attachment
-    ├── router/
-    │   ├── types.ts        # Route types
-    │   ├── scanner.ts      # File-system → RouteManifest
-    │   ├── matcher.ts      # URLPattern matching
-    │   └── api-handler.ts  # HTTP method dispatch for API routes
-    ├── server/
-    │   ├── dev-server.ts   # Bun.serve() dev server
-    │   ├── renderer.ts     # Page rendering + HTML shell
-    │   ├── hmr.ts          # WebSocket HMR
-    │   └── static.ts       # public/ file serving
-    ├── build/
-    │   ├── compiler.ts     # Orchestrates the full build
-    │   ├── bundler.ts      # Bun.build() wrappers
-    │   ├── static-gen.ts   # SSG — renders pages to HTML strings
-    │   ├── edge-function.ts # Generates edge function source code
-    │   └── vercel-output.ts # Writes .vercel/output/ structure
-    └── shared/
-        ├── constants.ts    # Directory names, paths, defaults
-        └── utils.ts        # Path helpers, MIME types, hash, debounce
-```
+| Export | Descrição |
+|--------|-----------|
+| `h`, `jsx`, `jsxs`, `jsxDEV` | JSX factory (usado pelo compilador TypeScript) |
+| `Fragment` | Suporte a `<>...</>` |
+| `renderToString(vnode)` | Renderiza VNode para string HTML |
+| `hydrate(vnode, container)` | Attaches event listeners no DOM existente |
+| `PageProps`, `PageMetadata`, `PageModule`, `ApiModule` | Types |
+| `VNode`, `VNodeChild`, `FunctionComponent` | Types do JSX |
 
 ---
 
 ## Roadmap
 
-- [ ] Netlify Edge Functions adapter
-- [ ] Cloudflare Pages adapter
-- [ ] Reactive state primitive (signals-based, no VDOM)
-- [ ] Native image optimization
-- [ ] CSS modules support
-- [ ] `freakjs.config.ts` (optional, for power users)
-- [ ] Plugin system
+- [ ] Adapter Netlify Edge Functions
+- [ ] Adapter Cloudflare Pages
+- [ ] Estado reativo (signals, sem VDOM)
+- [ ] Otimização nativa de imagens
+- [ ] CSS modules
+- [ ] `winget install FreakJS.FreakJS` (submissão em andamento)
 
 ---
 
-## License
+## Licença
 
 MIT

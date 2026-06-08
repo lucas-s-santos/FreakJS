@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "description": "Bun-native frontend framework — zero deps, edge-ready, free to deploy",
+  "homepage": "https://github.com/lucas-s-santos/FreakJS",
+  "license": "MIT",
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/lucas-s-santos/FreakJS/releases/download/v0.1.0/freakjs-windows-x64.exe",
+      "hash": "FREAKJS_WIN_HASH",
+      "bin": [["freakjs-windows-x64.exe", "freakjs"]]
+    }
+  },
+  "checkver": "github",
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/lucas-s-santos/FreakJS/releases/download/v$version/freakjs-windows-x64.exe"
+      }
+    }
+  }
+}

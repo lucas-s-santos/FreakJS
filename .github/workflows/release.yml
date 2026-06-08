@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Build binaries for all platforms
+        run: |
+          mkdir -p dist/bin
+          bun build --compile --target=bun-windows-x64  cli/index.ts --outfile dist/bin/freakjs-windows-x64.exe
+          bun build --compile --target=bun-linux-x64    cli/index.ts --outfile dist/bin/freakjs-linux-x64
+          bun build --compile --target=bun-linux-arm64  cli/index.ts --outfile dist/bin/freakjs-linux-arm64
+          bun build --compile --target=bun-darwin-x64   cli/index.ts --outfile dist/bin/freakjs-darwin-x64
+          bun build --compile --target=bun-darwin-arm64 cli/index.ts --outfile dist/bin/freakjs-darwin-arm64
+
+      - name: Compute SHA256 hashes
+        id: hashes
+        run: |
+          WIN_HASH=$(sha256sum dist/bin/freakjs-windows-x64.exe | awk '{print $1}')
+          LIN64_HASH=$(sha256sum dist/bin/freakjs-linux-x64 | awk '{print $1}')
+          LINARM_HASH=$(sha256sum dist/bin/freakjs-linux-arm64 | awk '{print $1}')
+          MAC64_HASH=$(sha256sum dist/bin/freakjs-darwin-x64 | awk '{print $1}')
+          MACARM_HASH=$(sha256sum dist/bin/freakjs-darwin-arm64 | awk '{print $1}')
+          echo "win_hash=$WIN_HASH" >> $GITHUB_OUTPUT
+          echo "lin64_hash=$LIN64_HASH" >> $GITHUB_OUTPUT
+          echo "linarm_hash=$LINARM_HASH" >> $GITHUB_OUTPUT
+          echo "mac64_hash=$MAC64_HASH" >> $GITHUB_OUTPUT
+          echo "macarm_hash=$MACARM_HASH" >> $GITHUB_OUTPUT
+
+      - name: Update Scoop manifest with version and hash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          WIN_HASH="${{ steps.hashes.outputs.win_hash }}"
+          sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" bucket/freakjs.json
+          sed -i "s/FREAKJS_WIN_HASH/$WIN_HASH/" bucket/freakjs.json
+          sed -i "s|/download/v[^/]*/freakjs-windows|/download/v$VERSION/freakjs-windows|" bucket/freakjs.json
+
+      - name: Commit updated Scoop manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add bucket/freakjs.json
+          git commit -m "chore: update scoop manifest to ${GITHUB_REF_NAME}" || echo "No changes to commit"
+          git push origin HEAD:main
+
+      - name: Create GitHub Release with binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/bin/*
+          generate_release_notes: true
+          body: |
+            ## Install
+
+            **Windows (Scoop):**
+            ```powershell
+            scoop bucket add freakjs https://github.com/lucas-s-santos/FreakJS
+            scoop install freakjs/freakjs
+            ```
+
+            **Mac / Linux:**
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/lucas-s-santos/FreakJS/main/install.sh | bash
+            ```
+
+            ## SHA256 Hashes
+            | File | SHA256 |
+            |------|--------|
+            | freakjs-windows-x64.exe | `${{ steps.hashes.outputs.win_hash }}` |
+            | freakjs-linux-x64 | `${{ steps.hashes.outputs.lin64_hash }}` |
+            | freakjs-linux-arm64 | `${{ steps.hashes.outputs.linarm_hash }}` |
+            | freakjs-darwin-x64 | `${{ steps.hashes.outputs.mac64_hash }}` |
+            | freakjs-darwin-arm64 | `${{ steps.hashes.outputs.macarm_hash }}` |
