@@ -42,11 +42,17 @@ export function renderToString(node: VNodeChild): string {
 
   const tag = vnode.type as string;
   const attrs = serializeAttrs(vnode.props);
-  const inner = vnode.children.map(renderToString).join("");
 
   if (VOID_ELEMENTS.has(tag)) {
     return `<${tag}${attrs}>`;
   }
+
+  if (vnode.props.dangerouslySetInnerHTML) {
+    const raw = (vnode.props.dangerouslySetInnerHTML as { __html: string }).__html;
+    return `<${tag}${attrs}>${raw}</${tag}>`;
+  }
+
+  const inner = vnode.children.map(renderToString).join("");
   return `<${tag}${attrs}>${inner}</${tag}>`;
 }
 
