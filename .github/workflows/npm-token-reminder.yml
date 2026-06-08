@@ -1,0 +1,44 @@
+name: NPM Token Renewal Reminder
+
+on:
+  schedule:
+    # roda todo dia às 9h UTC — verifica se o token expira em menos de 14 dias
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if NPM_TOKEN_EXPIRY is within 14 days
+        env:
+          EXPIRY: ${{ vars.NPM_TOKEN_EXPIRY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ -z "$EXPIRY" ]; then
+            echo "NPM_TOKEN_EXPIRY not set — skipping"
+            exit 0
+          fi
+          EXPIRY_TS=$(date -d "$EXPIRY" +%s 2>/dev/null || date -jf "%Y-%m-%d" "$EXPIRY" +%s)
+          NOW_TS=$(date +%s)
+          DAYS_LEFT=$(( (EXPIRY_TS - NOW_TS) / 86400 ))
+          echo "Days until token expiry: $DAYS_LEFT"
+          if [ "$DAYS_LEFT" -le 14 ]; then
+            gh issue create \
+              --repo "$REPO" \
+              --title "⚠️ NPM token expires in ${DAYS_LEFT} days — renew before $EXPIRY" \
+              --body "O token NPM (\`NPM_TOKEN\`) expira em **$EXPIRY** (${DAYS_LEFT} dias).
+
+          **Passos para renovar:**
+          1. Acesse https://www.npmjs.com/settings/~/tokens/new
+          2. Crie um novo token com: Leitura e gravação + Ignorar 2FA marcado + 90 dias
+          3. Atualize o secret em: https://github.com/$REPO/settings/secrets/actions
+             - \`NPM_TOKEN\` = novo token
+          4. Atualize a variável em: https://github.com/$REPO/settings/variables/actions
+             - \`NPM_TOKEN_EXPIRY\` = nova data (formato: YYYY-MM-DD)
+          5. Feche este issue.
+
+          > Gerado automaticamente pelo workflow \`npm-token-reminder.yml\`" \
+              --label "maintenance" || true
+          fi
