@@ -3,7 +3,7 @@ import { hashString } from "../shared/utils.ts";
 export interface ClientBundleResult {
   outputPath: string;
   hash: string;
-  sizeByes: number;
+  sizeBytes: number;
 }
 
 export async function bundleClientScript(
@@ -35,7 +35,7 @@ export async function bundleClientScript(
   return {
     outputPath: output.path,
     hash,
-    sizeByes: output.size,
+    sizeBytes: output.size,
   };
 }
 
