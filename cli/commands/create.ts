@@ -51,7 +51,7 @@ export async function create(args: string[]): Promise<void> {
         build: "freakjs build",
       },
       devDependencies: {
-        freakjs: isLocalDev ? "link:freakjs" : "github:lucas-s-santos/FreakJS",
+        freakjs: isLocalDev ? "link:freakjs" : "^0.1.3",
         "@types/bun": "latest",
       },
     }, null, 2) + "\n",
