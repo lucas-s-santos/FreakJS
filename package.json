@@ -17,6 +17,13 @@
   "bugs": {
     "url": "https://github.com/lucas-s-santos/FreakJS/issues"
   },
+  "files": [
+    "src/",
+    "cli/",
+    "runtime/",
+    "README.md",
+    "LICENSE"
+  ],
   "bin": {
     "freakjs": "./cli/index.ts"
   },
@@ -37,5 +44,15 @@
   },
   "peerDependencies": {
     "bun": ">=1.1.0"
-  }
+  },
+  "keywords": [
+    "bun",
+    "framework",
+    "frontend",
+    "ssr",
+    "edge",
+    "jsx",
+    "router",
+    "zero-deps"
+  ]
 }
