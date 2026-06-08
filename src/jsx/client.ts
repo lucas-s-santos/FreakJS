@@ -1,3 +1,6 @@
+// Copyright (c) 2025 João Gabriel do Vale Souza & Lucas Silva dos Santos
+// FreakJS — MIT License — https://github.com/lucas-s-santos/FreakJS
+
 // Client-side hydration — runs in the browser after SSR.
 // Strategy: walk the VNode tree in parallel with the real DOM
 // and attach event listeners. No re-render, no reconciliation.

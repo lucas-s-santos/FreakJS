@@ -3,6 +3,20 @@
   "version": "0.1.0",
   "description": "Bun-native frontend framework — zero deps, edge-ready, free to deploy",
   "type": "module",
+  "license": "MIT",
+  "author": "João Gabriel do Vale Souza & Lucas Silva dos Santos",
+  "contributors": [
+    "João Gabriel do Vale Souza",
+    "Lucas Silva dos Santos"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucas-s-santos/FreakJS.git"
+  },
+  "homepage": "https://github.com/lucas-s-santos/FreakJS",
+  "bugs": {
+    "url": "https://github.com/lucas-s-santos/FreakJS/issues"
+  },
   "bin": {
     "freakjs": "./cli/index.ts"
   },

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 João Gabriel do Vale Souza & Lucas Silva dos Santos
+// FreakJS — MIT License — https://github.com/lucas-s-santos/FreakJS
+
 import { watch } from "node:fs";
 import { join, resolve } from "node:path";
 import { scanPages } from "../router/scanner.ts";

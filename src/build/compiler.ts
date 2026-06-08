@@ -1,3 +1,6 @@
+// Copyright (c) 2025 João Gabriel do Vale Souza & Lucas Silva dos Santos
+// FreakJS — MIT License — https://github.com/lucas-s-santos/FreakJS
+
 import { mkdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { scanPages } from "../router/scanner.ts";

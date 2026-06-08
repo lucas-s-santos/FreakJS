@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+// Copyright (c) 2025 João Gabriel do Vale Souza & Lucas Silva dos Santos
+// FreakJS — MIT License — https://github.com/lucas-s-santos/FreakJS
 
 const [,, command, ...args] = process.argv;
 

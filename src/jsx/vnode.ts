@@ -1,3 +1,6 @@
+// Copyright (c) 2025 João Gabriel do Vale Souza & Lucas Silva dos Santos
+// FreakJS — MIT License — https://github.com/lucas-s-santos/FreakJS
+
 export const Fragment = Symbol("FreakJS.Fragment");
 
 export type VNodeChild = VNode | string | number | null | undefined | boolean;

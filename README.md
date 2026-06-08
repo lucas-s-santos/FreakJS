@@ -313,6 +313,16 @@ Comandos:
 
 ---
 
+## Criadores
+
+FreakJS foi criado e é mantido por:
+
+**João Gabriel do Vale Souza** e **Lucas Silva dos Santos**
+
+---
+
 ## Licença
 
-MIT
+MIT © 2025 João Gabriel do Vale Souza & Lucas Silva dos Santos
+
+O copyright está registrado no arquivo [LICENSE](./LICENSE) e no cabeçalho de todos os arquivos de código-fonte do projeto. Qualquer uso, cópia ou distribuição deve manter os créditos originais conforme a licença MIT.
