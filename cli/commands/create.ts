@@ -306,6 +306,19 @@ export default function Home({}: PageProps) {
     "utf-8",
   );
 
+  // netlify.toml — páginas estáticas na Netlify
+  writeFileSync(
+    join(targetDir, "netlify.toml"),
+    `[build]
+  command   = "bun run build"
+  publish   = ".vercel/output/static"
+
+[build.environment]
+  BUN_VERSION = "1.2.0"
+`,
+    "utf-8",
+  );
+
   // .gitignore
   writeFileSync(
     join(targetDir, ".gitignore"),
