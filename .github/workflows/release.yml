@@ -111,7 +111,7 @@ jobs:
           BASE_PATH="manifests/f/FreakJS/FreakJS/$VERSION"
 
           # Arquivo 1 — version manifest
-          FILE1=$(printf 'PackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nDefaultLocale: en-US\nManifestType: version\nManifestVersion: 1.12.0\n' "$VERSION" | base64 -w 0)
+          FILE1=$(printf '# yaml-language-server: $schema=https://aka.ms/winget-manifest.version.1.12.0.schema.json\nPackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nDefaultLocale: en-US\nManifestType: version\nManifestVersion: 1.12.0\n' "$VERSION" | base64 -w 0)
           gh api repos/$FORK_OWNER/winget-pkgs/contents/$BASE_PATH/FreakJS.FreakJS.yaml \
             -X PUT \
             -f message="Add FreakJS version $VERSION" \
@@ -119,7 +119,7 @@ jobs:
             -f branch="$BRANCH" > /dev/null
 
           # Arquivo 2 — installer manifest
-          FILE2=$(printf 'PackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nPlatform:\n  - Windows.Desktop\nMinimumOSVersion: 10.0.0.0\nInstallers:\n  - Architecture: x64\n    InstallerType: portable\n    InstallerUrl: https://github.com/lucas-s-santos/FreakJS/releases/download/v%s/freakjs-windows-x64.exe\n    InstallerSha256: %s\n    Commands:\n      - freakjs\n    PortableCommandAlias: freakjs\nManifestType: installer\nManifestVersion: 1.12.0\n' "$VERSION" "$VERSION" "$WIN_HASH" | base64 -w 0)
+          FILE2=$(printf '# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json\nPackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nInstallers:\n  - Architecture: x64\n    InstallerType: portable\n    InstallerUrl: https://github.com/lucas-s-santos/FreakJS/releases/download/v%s/freakjs-windows-x64.exe\n    InstallerSha256: %s\nManifestType: installer\nManifestVersion: 1.12.0\n' "$VERSION" "$VERSION" "$WIN_HASH" | base64 -w 0)
           gh api repos/$FORK_OWNER/winget-pkgs/contents/$BASE_PATH/FreakJS.FreakJS.installer.yaml \
             -X PUT \
             -f message="Add FreakJS version $VERSION" \
@@ -127,7 +127,7 @@ jobs:
             -f branch="$BRANCH" > /dev/null
 
           # Arquivo 3 — locale manifest
-          FILE3=$(printf 'PackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nPackageLocale: en-US\nPublisher: FreakJS\nPublisherUrl: https://github.com/lucas-s-santos/FreakJS\nPackageName: FreakJS\nPackageUrl: https://github.com/lucas-s-santos/FreakJS\nMoniker: freakjs\nLicense: MIT\nLicenseUrl: https://github.com/lucas-s-santos/FreakJS/blob/main/LICENSE\nCopyright: Copyright (c) 2025 Joao Gabriel do Vale Souza e Lucas Silva dos Santos\nShortDescription: Bun-native frontend framework — zero deps, edge-ready, free to deploy\nDescription: FreakJS is a minimal, security-first frontend framework built on Bun and W3C Web APIs. Zero runtime npm dependencies. File-based routing. SSR + Edge Functions. Deploys for free on Vercel, Netlify and Cloudflare Pages.\nTags:\n  - bun\n  - frontend\n  - framework\n  - javascript\n  - typescript\n  - edge\n  - ssr\nManifestType: defaultLocale\nManifestVersion: 1.12.0\n' "$VERSION" | base64 -w 0)
+          FILE3=$(printf '# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.12.0.schema.json\nPackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nPackageLocale: en-US\nPublisher: FreakJS\nPublisherUrl: https://github.com/lucas-s-santos/FreakJS\nPackageName: FreakJS\nPackageUrl: https://github.com/lucas-s-santos/FreakJS\nLicense: MIT\nShortDescription: Bun-native frontend framework - zero deps, edge-ready, free to deploy\nDescription: FreakJS is a minimal frontend framework built on Bun. Zero runtime npm dependencies. File-based routing. SSR plus Edge Functions.\nTags:\n  - bun\n  - frontend\n  - framework\n  - javascript\n  - typescript\nManifestType: defaultLocale\nManifestVersion: 1.12.0\n' "$VERSION" | base64 -w 0)
           gh api repos/$FORK_OWNER/winget-pkgs/contents/$BASE_PATH/FreakJS.FreakJS.locale.en-US.yaml \
             -X PUT \
             -f message="Add FreakJS version $VERSION" \
