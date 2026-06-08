@@ -1,0 +1,27 @@
+{
+  "name": "freakjs",
+  "version": "0.1.0",
+  "description": "Bun-native frontend framework — zero deps, edge-ready, free to deploy",
+  "type": "module",
+  "bin": {
+    "freakjs": "./cli/index.ts"
+  },
+  "exports": {
+    ".": "./runtime/index.ts",
+    "./jsx-runtime": "./src/jsx/factory.ts",
+    "./jsx-dev-runtime": "./src/jsx/factory.ts",
+    "./server": "./src/jsx/server.ts",
+    "./client": "./src/jsx/client.ts",
+    "./router": "./src/router/matcher.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "bun": ">=1.1.0"
+  }
+}

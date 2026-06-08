@@ -1,0 +1,7 @@
+node_modules/
+.vercel/
+.freak/
+bun.lockb
+bun.lock
+*.log
+.claude/

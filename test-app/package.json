@@ -1,0 +1,13 @@
+{
+  "name": "test-app",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "freakjs dev",
+    "build": "freakjs build"
+  },
+  "devDependencies": {
+    "freakjs": "link:freakjs",
+    "@types/bun": "latest"
+  }
+}
