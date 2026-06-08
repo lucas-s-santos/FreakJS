@@ -20,9 +20,7 @@ export async function create(args: string[]): Promise<void> {
 
   const targetDir = resolve(process.cwd(), projectName);
   const frameworkRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-  const freakjsDep = existsSync(resolve(frameworkRoot, "src/jsx/factory.ts"))
-    ? `file:${relative(targetDir, frameworkRoot).replace(/\\/g, "/")}`
-    : "^0.1.0";
+  const isLocalDev = existsSync(resolve(frameworkRoot, "src/jsx/factory.ts"));
 
   if (existsSync(targetDir)) {
     console.error(`[FreakJS] Directory already exists: ${targetDir}`);
@@ -53,7 +51,7 @@ export async function create(args: string[]): Promise<void> {
         build: "freakjs build",
       },
       devDependencies: {
-        freakjs: freakjsDep,
+        freakjs: isLocalDev ? "*" : "^0.1.0",
         "@types/bun": "latest",
       },
     }, null, 2) + "\n",
@@ -187,17 +185,36 @@ bun.lockb
   console.log(`  ✓ package.json, tsconfig.json\n`);
 
   console.log("  Instalando dependências...");
-  const proc = Bun.spawn(["bun", "install"], {
-    cwd: targetDir,
-    stdout: "inherit",
-    stderr: "inherit",
-  });
-  const exitCode = await proc.exited;
 
-  if (exitCode !== 0) {
-    console.error("\n[FreakJS] bun install falhou. Rode manualmente dentro do projeto.");
+  if (isLocalDev) {
+    // Instala as outras deps e depois linka o freakjs local via bun link
+    const install = Bun.spawn(["bun", "install", "--ignore-scripts"], {
+      cwd: targetDir,
+      stdout: "inherit",
+      stderr: "inherit",
+    });
+    await install.exited;
+
+    const link = Bun.spawn(["bun", "link", "freakjs"], {
+      cwd: targetDir,
+      stdout: "inherit",
+      stderr: "inherit",
+    });
+    await link.exited;
   } else {
-    console.log(`
+    const proc = Bun.spawn(["bun", "install"], {
+      cwd: targetDir,
+      stdout: "inherit",
+      stderr: "inherit",
+    });
+    const exitCode = await proc.exited;
+    if (exitCode !== 0) {
+      console.error("\n[FreakJS] bun install falhou. Rode manualmente dentro do projeto.");
+      return;
+    }
+  }
+
+  console.log(`
   Pronto! Próximos passos:
 
     cd ${projectName}
@@ -205,5 +222,4 @@ bun.lockb
 
   Acesse http://localhost:3000
 `);
-  }
 }
