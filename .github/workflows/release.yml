@@ -127,7 +127,7 @@ jobs:
             -f branch="$BRANCH" > /dev/null
 
           # Arquivo 3 — locale manifest
-          FILE3=$(printf 'PackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nPackageLocale: en-US\nPublisher: FreakJS\nPackageName: FreakJS\nLicense: MIT\nShortDescription: Bun-native frontend framework — zero deps, edge-ready, free to deploy\nDescription: |-\n  FreakJS is a minimal, security-first frontend framework built on Bun and W3C Web APIs.\n  Zero runtime npm dependencies. File-based routing. SSR + Edge Functions.\n  Deploys for free on Vercel, Netlify and Cloudflare Pages.\nTags:\n  - bun\n  - frontend\n  - framework\n  - javascript\n  - typescript\n  - edge\n  - vercel\nManifestType: defaultLocale\nManifestVersion: 1.6.0\n' "$VERSION" | base64 -w 0)
+          FILE3=$(printf 'PackageIdentifier: FreakJS.FreakJS\nPackageVersion: %s\nPackageLocale: en-US\nPublisher: FreakJS\nPackageName: FreakJS\nMoniker: freakjs\nLicense: MIT\nShortDescription: Bun-native frontend framework — zero deps, edge-ready, free to deploy\nDescription: |-\n  FreakJS is a minimal, security-first frontend framework built on Bun and W3C Web APIs.\n  Zero runtime npm dependencies. File-based routing. SSR + Edge Functions.\n  Deploys for free on Vercel, Netlify and Cloudflare Pages.\nTags:\n  - bun\n  - frontend\n  - framework\n  - javascript\n  - typescript\n  - edge\n  - vercel\nManifestType: defaultLocale\nManifestVersion: 1.6.0\n' "$VERSION" | base64 -w 0)
           gh api repos/$FORK_OWNER/winget-pkgs/contents/$BASE_PATH/FreakJS.FreakJS.locale.en-US.yaml \
             -X PUT \
             -f message="Add FreakJS version $VERSION" \
