@@ -2,6 +2,8 @@
 
 **Bun-native frontend framework. Zero runtime dependencies. Edge-ready. Free to deploy.**
 
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/lucas-s-santos/FreakJS/tree/main/template)
+
 FreakJS é um framework frontend minimalista e seguro, construído sobre [Bun](https://bun.sh) e W3C Web APIs. Sem risco de supply-chain do npm. Sem arquivos de configuração complexos. Deploy gratuito na Vercel, Netlify e Cloudflare Pages — sem backend.
 
 ---

@@ -1,0 +1,240 @@
+# FreakJS
+
+FreakJS is a Bun-native frontend framework with zero runtime npm dependencies.
+File-based routing. SSR + client hydration. Edge-ready (Vercel Build Output API v3).
+Free to deploy on Vercel, Netlify, Cloudflare Pages — no backend required.
+
+Created by João Gabriel do Vale Souza & Lucas Silva dos Santos.
+Repository: https://github.com/lucas-s-santos/FreakJS
+License: MIT
+
+---
+
+## Install (one-time, global)
+
+Windows:
+  winget install freakjs
+
+Mac/Linux:
+  curl -fsSL https://raw.githubusercontent.com/lucas-s-santos/FreakJS/main/install.sh | bash
+
+---
+
+## Create a project
+
+  freakjs create my-app
+  cd my-app
+  bun run dev      # → http://localhost:3000
+  bun run build    # → .vercel/output/
+
+---
+
+## Project structure
+
+  src/
+    pages/           # file-based routes
+      index.tsx      # → /
+      about.tsx      # → /about
+      blog/
+        [slug].tsx   # → /blog/:slug  (dynamic)
+        [...path].tsx # → /blog/:path* (catch-all)
+      api/
+        hello.ts     # → /api/hello   (Edge Function, no JSX)
+    components/      # shared components
+  public/            # static assets served at /
+  package.json
+  tsconfig.json
+
+---
+
+## Page component
+
+Every file in src/pages/ must export a default function.
+Props are typed with PageProps from "freakjs".
+
+  import type { PageProps } from "freakjs";
+
+  export const metadata = {
+    title: "Page title",
+    description: "SEO description",
+  };
+
+  export default function Home({ url, params, searchParams }: PageProps) {
+    return (
+      <main>
+        <h1>Hello</h1>
+      </main>
+    );
+  }
+
+PageProps shape:
+  {
+    params: Record<string, string>   // dynamic route segments
+    searchParams: URLSearchParams    // ?key=value
+    url: URL                         // full URL object
+  }
+
+---
+
+## Dynamic routes
+
+  // src/pages/blog/[slug].tsx
+  export default function Post({ params }: PageProps) {
+    return <h1>{params.slug}</h1>;
+  }
+
+  // src/pages/docs/[...path].tsx  (catch-all)
+  export default function Docs({ params }: PageProps) {
+    return <p>{params.path}</p>;
+  }
+
+---
+
+## API routes
+
+Files under src/pages/api/ export named HTTP method handlers.
+No JSX. Return Response objects.
+
+  // src/pages/api/hello.ts
+  export async function GET(req: Request, params: Record<string, string>): Promise<Response> {
+    return Response.json({ message: "hello" });
+  }
+
+  export async function POST(req: Request): Promise<Response> {
+    const body = await req.json();
+    return Response.json({ received: body }, { status: 201 });
+  }
+
+  export async function DELETE(req: Request, params: Record<string, string>): Promise<Response> {
+    return new Response(null, { status: 204 });
+  }
+
+Supported methods: GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS.
+Unhandled methods auto-return 405 Method Not Allowed.
+
+---
+
+## Components
+
+Plain functions returning JSX. No special imports except types.
+
+  // src/components/Button.tsx
+  import type { VNode } from "freakjs";
+
+  interface ButtonProps {
+    label: string;
+    href?: string;
+    children?: VNode[];
+  }
+
+  export function Button({ label, href, children }: ButtonProps) {
+    return (
+      <a href={href} className="btn">
+        {label}
+        {children}
+      </a>
+    );
+  }
+
+---
+
+## JSX rules
+
+- Use className instead of class
+- Use htmlFor instead of for
+- style accepts an object: style={{ color: "red", fontSize: "1rem" }}
+- Event handlers (onClick, onChange, etc.) are attached on the client only
+- Fragments: import { Fragment } from "freakjs" and use <Fragment> or <>
+
+---
+
+## Raw HTML / CSS blocks
+
+Use dangerouslySetInnerHTML for <style> tags and raw HTML:
+
+  const css = `
+    body { background: #000; color: #fff; }
+    @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+  `;
+
+  export default function Page() {
+    return (
+      <Fragment>
+        <style dangerouslySetInnerHTML={{ __html: css }} />
+        <main class="container">...</main>
+      </Fragment>
+    );
+  }
+
+---
+
+## Imports
+
+  import type { PageProps, PageMetadata, VNode, FunctionComponent } from "freakjs";
+  import { Fragment } from "freakjs";
+  import { renderToString } from "freakjs/server";
+  import { hydrate } from "freakjs/client";
+
+---
+
+## tsconfig.json (required)
+
+  {
+    "compilerOptions": {
+      "target": "ESNext",
+      "module": "ESNext",
+      "moduleResolution": "Bundler",
+      "jsx": "react-jsx",
+      "jsxImportSource": "freakjs",
+      "strict": true,
+      "skipLibCheck": true,
+      "types": ["bun-types"]
+    },
+    "include": ["src/**/*"]
+  }
+
+---
+
+## Deploy to Vercel
+
+  bun run build
+  vercel deploy --prebuilt
+
+Or connect the GitHub repo. Set build command: bun run build
+The .vercel/output/ directory is auto-detected by Vercel.
+
+Static pages → CDN edge (zero compute).
+Dynamic pages + API routes → Edge Functions (global, isolated V8).
+
+---
+
+## Using Supabase (no backend needed)
+
+  // src/pages/api/posts.ts
+  import { createClient } from "@supabase/supabase-js";
+
+  const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);
+
+  export async function GET(): Promise<Response> {
+    const { data, error } = await supabase.from("posts").select("*");
+    if (error) return Response.json({ error: error.message }, { status: 500 });
+    return Response.json(data);
+  }
+
+---
+
+## Design conventions
+
+FreakJS projects use dark backgrounds by default.
+Primary accent color: #7c3aed (purple).
+Font stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif.
+Monospace: 'SF Mono', 'Fira Code', 'Consolas', monospace.
+
+---
+
+## What FreakJS does NOT have (yet)
+
+- No useState / reactive state (use vanilla JS with event handlers)
+- No CSS modules (use inline styles or dangerouslySetInnerHTML <style>)
+- No image optimization
+- No middleware

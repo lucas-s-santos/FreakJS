@@ -1,0 +1,13 @@
+{
+  "name": "freakjs-starter",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "freakjs dev",
+    "build": "freakjs build"
+  },
+  "devDependencies": {
+    "freakjs": "^0.1.0",
+    "@types/bun": "latest"
+  }
+}
