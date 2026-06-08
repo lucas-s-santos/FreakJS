@@ -39,18 +39,19 @@ O output do build segue nativamente a [Vercel Build Output API v3](https://verce
 
 ## Instalação
 
-FreakJS é instalado como um **binário nativo** na sua máquina — igual ao Bun e ao Deno. Instale uma vez, use para sempre em qualquer terminal.
+FreakJS é instalado como um **binário nativo** — igual ao Bun e ao Deno. Instale uma vez, use para sempre em qualquer terminal.
+
+### Windows — Winget (recomendado)
+
+```powershell
+winget install freakjs
+```
 
 ### Windows — Scoop
 
 ```powershell
-# 1. Instalar Scoop (se ainda não tiver)
 irm get.scoop.sh | iex
-
-# 2. Adicionar o bucket do FreakJS
 scoop bucket add freakjs https://github.com/lucas-s-santos/FreakJS
-
-# 3. Instalar
 scoop install freakjs/freakjs
 ```
 
@@ -59,10 +60,6 @@ scoop install freakjs/freakjs
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lucas-s-santos/FreakJS/main/install.sh | bash
 ```
-
-Abra um novo terminal e o comando `freakjs` estará disponível.
-
-> **Winget (Windows):** A submissão ao repositório oficial da Microsoft está em andamento. Em breve: `winget install FreakJS.FreakJS`
 
 ---
 
@@ -76,7 +73,7 @@ cd meu-projeto
 bun run dev
 ```
 
-Acesse `http://localhost:3000` — está rodando.
+Acesse `http://localhost:3000` — a tela de boas-vindas do FreakJS abre automaticamente.
 
 ```bash
 bun run build   # gera .vercel/output/ pronto para deploy
@@ -84,23 +81,42 @@ bun run build   # gera .vercel/output/ pronto para deploy
 
 ---
 
-## Estrutura de um projeto FreakJS
+## O que é gerado pelo `freakjs create`
+
+O comando cria uma estrutura completa e pronta para rodar:
 
 ```
 meu-projeto/
 ├── src/
 │   ├── pages/
-│   │   ├── index.tsx          # → /
-│   │   ├── sobre.tsx          # → /sobre
-│   │   ├── blog/
-│   │   │   └── [slug].tsx     # → /blog/:slug  (dinâmica)
+│   │   ├── index.tsx          # Tela de boas-vindas com logo FreakJS → /
 │   │   └── api/
-│   │       └── hello.ts       # → /api/hello   (Edge Function)
-│   └── components/
-├── public/                    # Assets estáticos
+│   │       └── hello.ts       # API route de exemplo → /api/hello
+│   └── components/            # Pasta para seus componentes
+├── public/
+│   └── icon.png               # Logo do FreakJS (favicon incluso)
 ├── package.json
-└── tsconfig.json
+├── tsconfig.json
+└── .gitignore
 ```
+
+Ao rodar `bun run dev`, o `localhost:3000` abre com a tela de boas-vindas do FreakJS — fundo escuro, logo e nome do projeto — pronta para você substituir pelo seu conteúdo.
+
+---
+
+## Roteamento
+
+Cada arquivo em `src/pages/` vira automaticamente uma rota — sem configuração:
+
+| Arquivo                            | Rota             | Tipo      |
+|------------------------------------|------------------|-----------|
+| `src/pages/index.tsx`              | `/`              | página    |
+| `src/pages/sobre.tsx`              | `/sobre`         | página    |
+| `src/pages/blog/[slug].tsx`        | `/blog/:slug`    | dinâmica  |
+| `src/pages/docs/[...path].tsx`     | `/docs/:path*`   | catch-all |
+| `src/pages/api/hello.ts`           | `/api/hello`     | API       |
+
+Prioridade: estática > dinâmica > catch-all.
 
 ---
 
@@ -117,7 +133,7 @@ export const metadata = {
 
 export default function Home({ url, params, searchParams }: PageProps) {
   return (
-    <main>
+    <main style={{ background: "#0a0a0a", color: "#fff", minHeight: "100vh" }}>
       <h1>Olá, FreakJS</h1>
       <p>Caminho atual: {url.pathname}</p>
     </main>
@@ -135,19 +151,37 @@ interface PageProps {
 }
 ```
 
+### Metadata
+
+```ts
+export const metadata = {
+  title: "Título da página",       // <title>
+  description: "Descrição SEO",   // <meta name="description">
+};
+```
+
 ---
 
-## Roteamento
+## Componentes
 
-| Arquivo                            | Rota             | Tipo      |
-|------------------------------------|------------------|-----------|
-| `src/pages/index.tsx`              | `/`              | página    |
-| `src/pages/sobre.tsx`              | `/sobre`         | página    |
-| `src/pages/blog/[slug].tsx`        | `/blog/:slug`    | dinâmica  |
-| `src/pages/docs/[...path].tsx`     | `/docs/:path*`   | catch-all |
-| `src/pages/api/hello.ts`           | `/api/hello`     | API       |
+```tsx
+// src/components/Card.tsx
+import type { VNode } from "freakjs";
 
-Prioridade: estática > dinâmica > catch-all.
+interface CardProps {
+  titulo: string;
+  children?: VNode[];
+}
+
+export function Card({ titulo, children }: CardProps) {
+  return (
+    <div style={{ background: "#111", borderRadius: "8px", padding: "16px" }}>
+      <h2 style={{ color: "#fff", margin: "0 0 8px 0" }}>{titulo}</h2>
+      {children}
+    </div>
+  );
+}
+```
 
 ---
 
@@ -166,29 +200,6 @@ export async function POST(req: Request): Promise<Response> {
 ```
 
 Métodos não implementados retornam `405 Method Not Allowed` automaticamente.
-
----
-
-## Componentes
-
-```tsx
-// src/components/Card.tsx
-import type { VNode } from "freakjs";
-
-interface CardProps {
-  titulo: string;
-  children?: VNode[];
-}
-
-export function Card({ titulo, children }: CardProps) {
-  return (
-    <div className="card">
-      <h2>{titulo}</h2>
-      {children}
-    </div>
-  );
-}
-```
 
 ---
 
@@ -238,7 +249,7 @@ Aponte o diretório de publicação para `.vercel/output/static`.
 ├── config.json                    # Regras de rota (Build Output API v3)
 ├── static/
 │   ├── index.html                 # Páginas pré-renderizadas
-│   └── sobre.html
+│   └── _freakjs/
 └── functions/
     ├── blog/[slug].func/
     │   ├── index.js               # Edge Function empacotada
@@ -280,7 +291,7 @@ bun run dev   # → http://localhost:3000
 freakjs <comando>
 
 Comandos:
-  create <nome>   Cria um novo projeto FreakJS
+  create <nome>   Cria um novo projeto FreakJS com tela de boas-vindas
   dev             Inicia o servidor de desenvolvimento (porta 3000)
   build           Build de produção (Vercel Build Output API v3)
 ```
@@ -309,7 +320,6 @@ Comandos:
 - [ ] Estado reativo (signals, sem VDOM)
 - [ ] Otimização nativa de imagens
 - [ ] CSS modules
-- [ ] `winget install FreakJS.FreakJS` (submissão em andamento)
 
 ---
 
@@ -325,4 +335,4 @@ FreakJS foi criado e é mantido por:
 
 MIT © 2025 João Gabriel do Vale Souza & Lucas Silva dos Santos
 
-O copyright está registrado no arquivo [LICENSE](./LICENSE) e no cabeçalho de todos os arquivos de código-fonte do projeto. Qualquer uso, cópia ou distribuição deve manter os créditos originais conforme a licença MIT.
+O copyright está registrado no arquivo [LICENSE](./LICENSE) e no cabeçalho de todos os arquivos de código-fonte. Qualquer uso, cópia ou distribuição deve manter os créditos originais conforme a licença MIT.

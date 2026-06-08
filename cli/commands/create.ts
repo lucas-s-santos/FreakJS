@@ -1,5 +1,9 @@
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
-import { join, resolve, relative } from "node:path";
+// Copyright (c) 2025 João Gabriel do Vale Souza & Lucas Silva dos Santos
+// FreakJS — MIT License — https://github.com/lucas-s-santos/FreakJS
+
+import { mkdirSync, writeFileSync, existsSync, copyFileSync } from "node:fs";
+import { join, resolve, relative, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 export async function create(args: string[]): Promise<void> {
   const projectName = args[0];
@@ -15,7 +19,6 @@ export async function create(args: string[]): Promise<void> {
   }
 
   const targetDir = resolve(process.cwd(), projectName);
-  // Use local file: reference when running from the framework source (not published yet)
   const freakjsDep = existsSync(resolve(process.cwd(), "src/jsx/factory.ts"))
     ? `file:${relative(targetDir, process.cwd()).replace(/\\/g, "/")}`
     : "^0.1.0";
@@ -25,11 +28,18 @@ export async function create(args: string[]): Promise<void> {
     process.exit(1);
   }
 
-  console.log(`\n  Creating FreakJS project: ${projectName}\n`);
+  console.log(`\n  FreakJS — criando projeto: ${projectName}\n`);
 
-  // Scaffold directory structure
   mkdirSync(join(targetDir, "src", "pages", "api"), { recursive: true });
+  mkdirSync(join(targetDir, "src", "components"), { recursive: true });
   mkdirSync(join(targetDir, "public"), { recursive: true });
+
+  // Copia o icon.png do framework para public/ do projeto
+  const frameworkRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+  const iconSrc = join(frameworkRoot, "icon.png");
+  if (existsSync(iconSrc)) {
+    copyFileSync(iconSrc, join(targetDir, "public", "icon.png"));
+  }
 
   // package.json
   writeFileSync(
@@ -70,7 +80,7 @@ export async function create(args: string[]): Promise<void> {
     "utf-8",
   );
 
-  // src/pages/index.tsx
+  // Página de boas-vindas com branding FreakJS
   writeFileSync(
     join(targetDir, "src", "pages", "index.tsx"),
     `import type { PageProps } from "freakjs";
@@ -80,11 +90,68 @@ export const metadata = {
   description: "Built with FreakJS",
 };
 
-export default function Home({ url }: PageProps) {
+export default function Home({}: PageProps) {
   return (
-    <main>
-      <h1>Welcome to FreakJS</h1>
-      <p>Edit <code>src/pages/index.tsx</code> to get started.</p>
+    <main style={{
+      minHeight: "100vh",
+      background: "#0a0a0a",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      fontFamily: "system-ui, -apple-system, sans-serif",
+      color: "#ffffff",
+      margin: "0",
+    }}>
+      <img
+        src="/icon.png"
+        alt="FreakJS"
+        style={{ width: "80px", height: "80px", marginBottom: "28px" }}
+      />
+
+      <h1 style={{
+        fontSize: "3rem",
+        fontWeight: "700",
+        margin: "0 0 8px 0",
+        letterSpacing: "-0.03em",
+      }}>
+        FreakJS
+      </h1>
+
+      <p style={{
+        color: "#555",
+        margin: "0 0 56px 0",
+        fontSize: "1rem",
+        letterSpacing: "0.02em",
+      }}>
+        Bun-native · Zero deps · Edge-ready
+      </p>
+
+      <div style={{
+        background: "#111111",
+        border: "1px solid #1f1f1f",
+        borderRadius: "12px",
+        padding: "28px 36px",
+        textAlign: "center",
+        minWidth: "280px",
+      }}>
+        <p style={{
+          color: "#444",
+          fontSize: "0.75rem",
+          margin: "0 0 14px 0",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+        }}>
+          Comece editando
+        </p>
+        <code style={{ color: "#7dd3fc", fontSize: "0.95rem" }}>
+          src/pages/index.tsx
+        </code>
+      </div>
+
+      <p style={{ color: "#2a2a2a", fontSize: "0.75rem", marginTop: "64px" }}>
+        ${projectName} · powered by FreakJS
+      </p>
     </main>
   );
 }
@@ -92,7 +159,7 @@ export default function Home({ url }: PageProps) {
     "utf-8",
   );
 
-  // src/pages/api/hello.ts
+  // API route de exemplo
   writeFileSync(
     join(targetDir, "src", "pages", "api", "hello.ts"),
     `export async function GET(req: Request): Promise<Response> {
@@ -113,13 +180,13 @@ bun.lockb
     "utf-8",
   );
 
-  console.log(`  ✓ Created ${projectName}/`);
-  console.log(`  ✓ src/pages/index.tsx`);
-  console.log(`  ✓ src/pages/api/hello.ts`);
+  console.log(`  ✓ ${projectName}/src/pages/index.tsx`);
+  console.log(`  ✓ ${projectName}/src/pages/api/hello.ts`);
+  console.log(`  ✓ ${projectName}/src/components/`);
+  console.log(`  ✓ ${projectName}/public/`);
   console.log(`  ✓ package.json, tsconfig.json\n`);
 
-  // Run bun install
-  console.log("  Installing dependencies...");
+  console.log("  Instalando dependências...");
   const proc = Bun.spawn(["bun", "install"], {
     cwd: targetDir,
     stdout: "inherit",
@@ -128,13 +195,15 @@ bun.lockb
   const exitCode = await proc.exited;
 
   if (exitCode !== 0) {
-    console.error("\n[FreakJS] bun install failed. Run it manually inside the project.");
+    console.error("\n[FreakJS] bun install falhou. Rode manualmente dentro do projeto.");
   } else {
     console.log(`
-  Done! Next steps:
+  Pronto! Próximos passos:
 
     cd ${projectName}
     bun run dev
+
+  Acesse http://localhost:3000
 `);
   }
 }

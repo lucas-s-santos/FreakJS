@@ -55,10 +55,17 @@ function serializeAttrs(props: Record<string, unknown>): string {
   for (const [k, v] of Object.entries(props)) {
     if (v === false || v === null || v === undefined) continue;
     if (k === "children") continue;
-    if (k.startsWith("on")) continue; // strip event handlers
+    if (k.startsWith("on")) continue;
     if (k === "className") { out += ` class="${escapeHtml(String(v))}"`;  continue; }
     if (k === "htmlFor")   { out += ` for="${escapeHtml(String(v))}"`;    continue; }
-    if (k === "dangerouslySetInnerHTML") continue; // handled separately
+    if (k === "dangerouslySetInnerHTML") continue;
+    if (k === "style" && typeof v === "object") {
+      const css = Object.entries(v as Record<string, string>)
+        .map(([p, val]) => `${p.replace(/([A-Z])/g, "-$1").toLowerCase()}:${val}`)
+        .join(";");
+      out += ` style="${escapeHtml(css)}"`;
+      continue;
+    }
     if (v === true) { out += ` ${k}`; continue; }
     out += ` ${k}="${escapeHtml(String(v))}"`;
   }

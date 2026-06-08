@@ -81,6 +81,7 @@ export function buildHtmlShell(opts: ShellOptions): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${opts.title}</title>${opts.description ? `\n  <meta name="description" content="${opts.description}">` : ""}
+  <link rel="icon" type="image/png" href="/icon.png">
 </head>
 <body>
   <div id="${ROOT_ELEMENT_ID}">${opts.bodyHtml}</div>
